@@ -1,11 +1,14 @@
-const gulp = require("gulp");
-const imagemin = require("gulp-imagemin");
-const uglify = require("gulp-uglify");
-const sass = require("gulp-sass");
+var gulp = require("gulp");
+var imagemin = require("gulp-imagemin");
+var uglify = require("gulp-uglify");
+var sass = require("gulp-sass");
 var sassGlob = require("gulp-sass-glob");
-const devserver = require("browser-sync");
-const twig = require("gulp-twig2html");
-const rename = require("gulp-rename");
+var devserver = require("browser-sync");
+var twig = require("gulp-twig2html");
+var rename = require("gulp-rename");
+var postcss = require("gulp-postcss");
+var autoprefixer = require("autoprefixer");
+var sourcemaps = require("gulp-sourcemaps");
 
 //Copying the twig to HTML
 gulp.task("twig", function () {
@@ -34,8 +37,11 @@ gulp.task("minifyJs", async () => {
 gulp.task("sass", async () => {
   gulp
     .src("src/sass/main.scss")
+    .pipe(sourcemaps.init())
     .pipe(sassGlob())
     .pipe(sass().on("error", sass.logError))
+    .pipe(postcss([autoprefixer()]))
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest("dist/css"));
 });
 
@@ -53,7 +59,7 @@ const watch = async () => {
   gulp.watch("src/sass/**/*.scss", gulp.series("sass", "browser-reload"));
   gulp.watch("src/js/*.js", gulp.series("minifyJs", "browser-reload"));
   gulp.watch("src/**/*.twig", gulp.series("twig", "browser-reload"));
-  gulp.watch("src/img/**/*.*", gulp.series("imageMin", "browser-reload"));
+  gulp.watch("src/img/*", gulp.series("imageMin", "browser-reload"));
   httpserver.init(serveoptions);
 };
 
